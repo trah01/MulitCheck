@@ -8,8 +8,13 @@
   </head>
   <body>
     <main class="card">
-      <h1>Checkbox Range Selector</h1>
-      <p id="effective-status" class="status">Status: loading...</p>
+      <header class="header">
+        <img class="app-icon" src="../assets/icons/icon32.png" alt="" />
+        <div>
+          <h1>Checkbox Range Selector</h1>
+          <p id="effective-status" class="status" aria-live="polite">Status: loading...</p>
+        </div>
+      </header>
 
       <section class="section">
         <div class="row">
@@ -26,7 +31,7 @@
         <div class="row">
           <span id="global-label">Global switch</span>
           <label class="switch">
-            <input id="global-enabled" type="checkbox" />
+            <input id="global-enabled" type="checkbox" aria-labelledby="global-label" />
             <span class="slider"></span>
           </label>
         </div>
