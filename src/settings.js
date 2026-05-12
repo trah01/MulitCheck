@@ -7,7 +7,7 @@ const LANGUAGE_ZH_CN = "zh-CN";
 
 const TRANSLATIONS = {
   [LANGUAGE_EN]: {
-    appTitle: "Checkbox Range Selector",
+    appTitle: "mulitcheck",
     statusLoading: "Status: loading...",
     statusPrefix: "Status: ",
     globalSwitch: "Global switch",
@@ -39,7 +39,7 @@ const TRANSLATIONS = {
     indicatorUnselected: "unselected {count}",
   },
   [LANGUAGE_ZH_CN]: {
-    appTitle: "Checkbox Range Selector",
+    appTitle: "mulitcheck",
     statusLoading: "状态：读取中...",
     statusPrefix: "状态：",
     globalSwitch: "全局开关",

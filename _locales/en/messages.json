@@ -1,6 +1,6 @@
 {
   "extensionName": {
-    "message": "Checkbox Range Selector"
+    "message": "mulitcheck"
   },
   "extensionDescription": {
     "message": "Use Shift+Click to batch select checkboxes inside the same parent container."

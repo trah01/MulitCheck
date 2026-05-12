@@ -1,8 +1,8 @@
-# Privacy Policy for Checkbox Range Selector
+# Privacy Policy for mulitcheck
 
 Effective date: May 12, 2026
 
-Checkbox Range Selector is a Chrome extension that lets users select or clear ranges of checkboxes with Shift+Click.
+mulitcheck is a Chrome extension that lets users select or clear ranges of checkboxes with Shift+Click.
 
 ## Data We Store
 
