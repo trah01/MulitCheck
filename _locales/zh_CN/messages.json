@@ -1,0 +1,8 @@
+{
+  "extensionName": {
+    "message": "Checkbox Range Selector"
+  },
+  "extensionDescription": {
+    "message": "使用 Shift+单击，在同一个父级容器内批量勾选复选框。"
+  }
+}

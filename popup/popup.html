@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Checkbox Range Selector</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="card">
+      <h1>Checkbox Range Selector</h1>
+      <p id="effective-status" class="status">Status: loading...</p>
+
+      <section class="section">
+        <div class="row">
+          <label id="language-label" for="language-select">Language</label>
+          <select id="language-select">
+            <option value="auto">Auto (browser language)</option>
+            <option value="zh-CN">Simplified Chinese</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="row">
+          <span id="global-label">Global switch</span>
+          <label class="switch">
+            <input id="global-enabled" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <section class="section" id="site-section">
+        <p class="title"><span id="current-site-label">Current site: </span><code id="site-hostname">Loading...</code></p>
+        <label class="option">
+          <input type="radio" name="site-mode" value="inherit" />
+          <span id="site-mode-inherit-label">Follow global</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="site-mode" value="force-on" />
+          <span id="site-mode-force-on-label">Force on for this site</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="site-mode" value="force-off" />
+          <span id="site-mode-force-off-label">Force off for this site</span>
+        </label>
+        <p id="site-note" class="tip"></p>
+      </section>
+
+      <p id="rule-note" class="tip">Rule: site setting has priority. Force on/off for a site overrides the global switch.</p>
+    </main>
+    <script src="../src/settings.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
