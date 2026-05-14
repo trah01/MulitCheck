@@ -3,6 +3,6 @@
     "message": "mulitcheck"
   },
   "extensionDescription": {
-    "message": "Use Shift+Click to batch select checkboxes inside the same parent container."
+    "message": "Use Shift+click to select multiple checkboxes at once - no need to click them one by one"
   }
 }

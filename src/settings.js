@@ -16,6 +16,7 @@ const TRANSLATIONS = {
     languageZhCn: "Simplified Chinese",
     languageEn: "English",
     currentSite: "Current site: ",
+    localFileSite: "Local files",
     loading: "Loading...",
     unsupportedPage: "Unsupported page",
     inheritGlobal: "Follow global",
@@ -25,18 +26,14 @@ const TRANSLATIONS = {
     siteForceOnDescription: "Current site: forced on (overrides global).",
     siteForceOffDescription: "Current site: forced off (overrides global).",
     siteInheritDescription: "Current site: follows the global switch.",
-    siteUnsupportedDescription: "Site-level switches only support http/https pages.",
+    siteUnsupportedDescription:
+      "Site-level switches support http/https pages and local files after file URL access is allowed.",
+    fileAccessRequiredDescription:
+      "Local file pages require enabling \"Allow access to file URLs\" on this extension's details page.",
     effectiveForcedOnBySite: "Enabled (forced on by site)",
     effectiveDisabledBySite: "Disabled (forced off by site)",
     effectiveDisabledByGlobal: "Disabled (global switch)",
     effectiveActive: "Enabled",
-    indicatorPrefix: "Checkbox Range: ",
-    indicatorActive: "active",
-    indicatorForcedOnBySite: "forced on by site",
-    indicatorDisabledBySite: "disabled by site",
-    indicatorDisabledByGlobal: "disabled by global",
-    indicatorSelected: "selected {count}",
-    indicatorUnselected: "unselected {count}",
   },
   [LANGUAGE_ZH_CN]: {
     appTitle: "mulitcheck",
@@ -48,6 +45,7 @@ const TRANSLATIONS = {
     languageZhCn: "简体中文",
     languageEn: "英文",
     currentSite: "当前网站：",
+    localFileSite: "本地文件",
     loading: "读取中...",
     unsupportedPage: "当前页面不支持",
     inheritGlobal: "跟随全局",
@@ -57,18 +55,12 @@ const TRANSLATIONS = {
     siteForceOnDescription: "当前网站：强制开启（覆盖全局）。",
     siteForceOffDescription: "当前网站：强制关闭（覆盖全局）。",
     siteInheritDescription: "当前网站：跟随全局开关。",
-    siteUnsupportedDescription: "仅 http/https 页面支持网站级开关。",
+    siteUnsupportedDescription: "网站级开关支持 http/https 页面；本地文件需要先允许访问文件网址。",
+    fileAccessRequiredDescription: "本地页面需要在扩展详情页开启“允许访问文件网址”。",
     effectiveForcedOnBySite: "已启用（网站强制开启）",
     effectiveDisabledBySite: "已停用（网站强制关闭）",
     effectiveDisabledByGlobal: "已停用（全局开关）",
     effectiveActive: "已启用",
-    indicatorPrefix: "Checkbox Range：",
-    indicatorActive: "启用",
-    indicatorForcedOnBySite: "网站强制开启",
-    indicatorDisabledBySite: "网站强制关闭",
-    indicatorDisabledByGlobal: "全局开关关闭",
-    indicatorSelected: "已勾选 {count} 项",
-    indicatorUnselected: "已取消 {count} 项",
   },
 };
 
@@ -179,6 +171,10 @@ function getHostnameFromUrl(url) {
     parsed = new URL(url);
   } catch (_error) {
     return null;
+  }
+
+  if (parsed.protocol === "file:") {
+    return "file://";
   }
 
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {

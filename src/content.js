@@ -1,4 +1,3 @@
-const STATUS_INDICATOR_ID = "checkbox-range-selector-status";
 const SettingsUtils = resolveSettingsUtils();
 
 function createCheckboxRangeController(options = {}) {
@@ -76,27 +75,17 @@ function initContentScript(doc, options = {}) {
     return () => {};
   }
 
-  ensureStatusIndicator(doc);
-
   const state = {
     enabled: true,
-    baseLabel: "active",
-    language: resolveCurrentLanguage(options.languagePreference),
   };
 
   const controller = createCheckboxRangeController({
     isFeatureEnabled: () => state.enabled,
-    onRangeApplied(count, checked) {
-      notifyRangeApplied(doc, count, checked, state.language, () =>
-        statusTextFromLabel(state.baseLabel, state.language)
-      );
-    },
+    onRangeApplied,
   });
 
   const onClick = (event) => controller.handleClick(event);
   doc.addEventListener("click", onClick, false);
-
-  hideIndicator(doc);
 
   const chromeApi = resolveChromeApi(options.chromeApi);
   const hostname = resolveHostname(doc, options.hostname);
@@ -112,9 +101,6 @@ function initContentScript(doc, options = {}) {
 
     const effective = resolveEffectiveForHost(settings, hostname);
     state.enabled = !!effective.enabled;
-    state.baseLabel = effective.label;
-    state.language = resolveCurrentLanguage(settings.languagePreference);
-    applyBaseState(doc, state.enabled, state.baseLabel, state.language);
   };
 
   refreshState();
@@ -129,7 +115,7 @@ function initContentScript(doc, options = {}) {
       if (areaName && areaName !== "sync") {
         return;
       }
-      if (!changes || changes.globalEnabled || changes.siteOverrides || changes.languagePreference) {
+      if (!changes || changes.globalEnabled || changes.siteOverrides) {
         refreshState();
       }
     };
@@ -138,7 +124,6 @@ function initContentScript(doc, options = {}) {
 
   return () => {
     disposed = true;
-    clearRangeNotifyTimer(doc);
     if (typeof doc.removeEventListener === "function") {
       doc.removeEventListener("click", onClick, false);
     }
@@ -153,6 +138,8 @@ function initContentScript(doc, options = {}) {
     }
   };
 }
+
+function onRangeApplied() {}
 
 function isCheckbox(node) {
   if (!node) {
@@ -296,133 +283,6 @@ function normalizeGlobalEnabled(value) {
   return typeof value === "boolean" ? value : true;
 }
 
-function statusTextFromLabel(label, language) {
-  return `${translate("indicatorPrefix", language)}${indicatorLabelText(label, language)}`;
-}
-
-function indicatorLabelText(label, language) {
-  if (label === "forced on by site") {
-    return translate("indicatorForcedOnBySite", language);
-  }
-  if (label === "disabled by site") {
-    return translate("indicatorDisabledBySite", language);
-  }
-  if (label === "disabled by global") {
-    return translate("indicatorDisabledByGlobal", language);
-  }
-  return translate("indicatorActive", language);
-}
-
-function applyBaseState(doc, enabled, label, language) {
-  if (!enabled) {
-    hideIndicator(doc);
-    return;
-  }
-
-  showIndicator(doc);
-  setIndicatorText(doc, statusTextFromLabel(label, language), false);
-}
-
-function notifyRangeApplied(doc, count, checked, language, idleTextGetter) {
-  const indicator = getStatusIndicator(doc);
-  if (!indicator) {
-    return;
-  }
-
-  showIndicator(doc);
-  const messageKey = checked ? "indicatorSelected" : "indicatorUnselected";
-  const message = `${translate("indicatorPrefix", language)}${translate(
-    messageKey,
-    language,
-    { count }
-  )}`;
-
-  indicator.textContent = message;
-  indicator.style.opacity = "1";
-
-  clearRangeNotifyTimer(doc);
-  indicator._rangeTimer = setTimeout(() => {
-    const idleText =
-      typeof idleTextGetter === "function"
-        ? idleTextGetter()
-        : statusTextFromLabel("active", language);
-    indicator.textContent = idleText;
-    indicator.style.opacity = "0.55";
-  }, 1300);
-}
-
-function clearRangeNotifyTimer(doc) {
-  const indicator = getStatusIndicator(doc);
-  if (!indicator || !indicator._rangeTimer) {
-    return;
-  }
-  clearTimeout(indicator._rangeTimer);
-  indicator._rangeTimer = null;
-}
-
-function setIndicatorText(doc, text, highlighted) {
-  const indicator = getStatusIndicator(doc);
-  if (!indicator) {
-    return;
-  }
-  indicator.textContent = text;
-  indicator.style.opacity = highlighted ? "1" : "0.55";
-}
-
-function getStatusIndicator(doc) {
-  if (!doc || typeof doc.getElementById !== "function") {
-    return null;
-  }
-  return doc.getElementById(STATUS_INDICATOR_ID);
-}
-
-function ensureStatusIndicator(doc) {
-  if (!doc || !doc.body || typeof doc.createElement !== "function") {
-    return;
-  }
-
-  if (getStatusIndicator(doc)) {
-    return;
-  }
-
-  const indicator = doc.createElement("div");
-  indicator.id = STATUS_INDICATOR_ID;
-  indicator.textContent = statusTextFromLabel("active", resolveCurrentLanguage());
-  indicator.style.position = "fixed";
-  indicator.style.right = "12px";
-  indicator.style.bottom = "12px";
-  indicator.style.zIndex = "2147483647";
-  indicator.style.padding = "6px 10px";
-  indicator.style.borderRadius = "8px";
-  indicator.style.background = "rgba(25, 25, 25, 0.88)";
-  indicator.style.color = "#fff";
-  indicator.style.fontSize = "12px";
-  indicator.style.fontFamily =
-    "ui-sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
-  indicator.style.lineHeight = "1.2";
-  indicator.style.opacity = "0.55";
-  indicator.style.pointerEvents = "none";
-  indicator.style.transition = "opacity 0.2s ease";
-  indicator.style.display = "none";
-  doc.body.appendChild(indicator);
-}
-
-function showIndicator(doc) {
-  const indicator = getStatusIndicator(doc);
-  if (!indicator) {
-    return;
-  }
-  indicator.style.display = "block";
-}
-
-function hideIndicator(doc) {
-  const indicator = getStatusIndicator(doc);
-  if (!indicator) {
-    return;
-  }
-  indicator.style.display = "none";
-}
-
 function resolveChromeApi(explicitChromeApi) {
   if (explicitChromeApi) {
     return explicitChromeApi;
@@ -437,8 +297,13 @@ function resolveHostname(doc, providedHostname) {
   if (typeof providedHostname === "string") {
     return providedHostname;
   }
-  if (doc && doc.location && typeof doc.location.hostname === "string") {
-    return doc.location.hostname || null;
+  if (doc && doc.location) {
+    if (typeof doc.location.hostname === "string" && doc.location.hostname) {
+      return doc.location.hostname;
+    }
+    if (typeof doc.location.href === "string") {
+      return getHostnameFromUrl(doc.location.href);
+    }
   }
   if (typeof location !== "undefined" && typeof location.href === "string") {
     return getHostnameFromUrl(location.href);
@@ -453,6 +318,9 @@ function getHostnameFromUrl(url) {
 
   try {
     const parsed = new URL(url);
+    if (parsed.protocol === "file:") {
+      return "file://";
+    }
     if (parsed.protocol === "http:" || parsed.protocol === "https:") {
       return parsed.hostname || null;
     }
@@ -466,7 +334,6 @@ async function readStoredSettings(chromeApi) {
   const defaults = {
     globalEnabled: true,
     siteOverrides: {},
-    languagePreference: "auto",
   };
 
   if (
@@ -481,7 +348,6 @@ async function readStoredSettings(chromeApi) {
   const stored = await storageGet(chromeApi.storage.sync, [
     "globalEnabled",
     "siteOverrides",
-    "languagePreference",
   ]);
   return {
     globalEnabled: normalizeGlobalEnabled(stored.globalEnabled),
@@ -489,48 +355,7 @@ async function readStoredSettings(chromeApi) {
       stored.siteOverrides && typeof stored.siteOverrides === "object"
         ? stored.siteOverrides
         : {},
-    languagePreference: normalizeLanguagePreference(stored.languagePreference),
   };
-}
-
-function normalizeLanguagePreference(value) {
-  if (SettingsUtils && typeof SettingsUtils.normalizeLanguagePreference === "function") {
-    return SettingsUtils.normalizeLanguagePreference(value);
-  }
-  if (value === "en" || value === "zh-CN" || value === "auto") {
-    return value;
-  }
-  return "auto";
-}
-
-function resolveCurrentLanguage(languagePreference) {
-  if (SettingsUtils && typeof SettingsUtils.resolveLanguage === "function") {
-    return SettingsUtils.resolveLanguage(languagePreference, getBrowserLanguages());
-  }
-  if (languagePreference === "zh-CN") {
-    return "zh-CN";
-  }
-  if (languagePreference === "en") {
-    return "en";
-  }
-  return getBrowserLanguages().some((language) => /^zh\b|^zh-/i.test(language)) ? "zh-CN" : "en";
-}
-
-function getBrowserLanguages() {
-  if (typeof navigator !== "undefined" && Array.isArray(navigator.languages)) {
-    return navigator.languages;
-  }
-  if (typeof navigator !== "undefined" && typeof navigator.language === "string") {
-    return [navigator.language];
-  }
-  return [];
-}
-
-function translate(key, language, substitutions) {
-  if (SettingsUtils && typeof SettingsUtils.translate === "function") {
-    return SettingsUtils.translate(key, language, substitutions);
-  }
-  return key;
 }
 
 function storageGet(storageArea, keys) {

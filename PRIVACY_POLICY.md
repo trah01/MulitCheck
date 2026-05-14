@@ -9,16 +9,16 @@ mulitcheck is a Chrome extension that lets users select or clear ranges of check
 The extension stores only user preferences needed for its features:
 
 - Global enabled/disabled state.
-- Per-site enable/disable overrides, stored by hostname.
+- Per-site enable/disable overrides, stored by hostname or the local file marker.
 - Language preference.
 
 These preferences are stored with Chrome's `chrome.storage.sync` API so Chrome may sync them through the user's signed-in Chrome profile. The extension does not operate an external server and does not receive this data.
 
 ## Data We Access
 
-The extension runs a content script on HTTP and HTTPS pages to detect checkbox clicks and apply range selection. It does not read form values, passwords, payment information, page text, cookies, browsing history, or files.
+The extension runs a content script on HTTP and HTTPS pages to detect checkbox clicks and apply range selection. If the user explicitly enables Chrome's file URL access setting for this extension, it can also run on local `file://` pages. It does not read form values, passwords, payment information, page text, cookies, browsing history, or file contents.
 
-When the user opens the extension popup, the extension uses Chrome's `activeTab` permission to read the active tab URL temporarily. This is used only to determine the current hostname so the user can configure per-site behavior.
+When the user opens the extension popup, the extension uses Chrome's `activeTab` permission to read the active tab URL temporarily. This is used only to determine the current hostname or local file context so the user can configure per-site behavior.
 
 ## Data Sharing
 

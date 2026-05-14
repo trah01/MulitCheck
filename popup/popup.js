@@ -29,6 +29,8 @@
 
   const state = {
     hostname: null,
+    isFileUrl: false,
+    fileAccessAllowed: true,
     settings: {
       globalEnabled: true,
       siteOverrides: {},
@@ -37,7 +39,10 @@
   };
 
   const activeTab = await getActiveTab();
-  state.hostname = settingsApi.getHostnameFromUrl(activeTab && activeTab.url);
+  const activeUrl = activeTab && activeTab.url;
+  state.hostname = settingsApi.getHostnameFromUrl(activeUrl);
+  state.isFileUrl = typeof activeUrl === "string" && activeUrl.startsWith("file:");
+  state.fileAccessAllowed = state.isFileUrl ? await isAllowedFileSchemeAccess() : true;
   state.settings = await loadSettings();
   render();
   bindEvents();
@@ -145,7 +150,9 @@
     }
 
     if (siteHostname) {
-      siteHostname.textContent = siteSupported ? state.hostname : t("unsupportedPage", language);
+      siteHostname.textContent = siteSupported
+        ? displayNameForSite(state.hostname, language)
+        : t("unsupportedPage", language);
     }
 
     siteModeInputs.forEach((input) => {
@@ -158,9 +165,7 @@
     }
 
     if (siteNote) {
-      siteNote.textContent = siteSupported
-        ? siteModeDescription(siteMode, language)
-        : t("siteUnsupportedDescription", language);
+      siteNote.textContent = siteDescription(siteSupported, siteMode, language);
     }
 
     if (effectiveStatus) {
@@ -219,6 +224,23 @@
       return t("siteForceOffDescription", language);
     }
     return t("siteInheritDescription", language);
+  }
+
+  function siteDescription(siteSupported, siteMode, language) {
+    if (!siteSupported) {
+      return t("siteUnsupportedDescription", language);
+    }
+    if (state.isFileUrl && !state.fileAccessAllowed) {
+      return t("fileAccessRequiredDescription", language);
+    }
+    return siteModeDescription(siteMode, language);
+  }
+
+  function displayNameForSite(hostname, language) {
+    if (hostname === "file://") {
+      return t("localFileSite", language);
+    }
+    return hostname;
   }
 
   function uiLabelFromEffective(label, language) {
@@ -349,5 +371,22 @@
     }
 
     return Promise.resolve(null);
+  }
+
+  function isAllowedFileSchemeAccess() {
+    if (
+      !chrome.extension ||
+      typeof chrome.extension.isAllowedFileSchemeAccess !== "function"
+    ) {
+      return Promise.resolve(false);
+    }
+
+    return new Promise((resolve) => {
+      try {
+        chrome.extension.isAllowedFileSchemeAccess((allowed) => resolve(!!allowed));
+      } catch (_error) {
+        resolve(false);
+      }
+    });
   }
 })();
